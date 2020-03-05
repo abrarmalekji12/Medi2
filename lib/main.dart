@@ -3,16 +3,31 @@ import 'package:flutter/services.dart';
 import 'package:mediswift/home.dart';
 import 'package:mediswift/login.dart';
 import 'package:mediswift/register.dart';
+import 'package:mediswift/screens/edit_user_profile.dart';
+import 'package:mediswift/screens/payment_screen.dart';
+import 'package:mediswift/screens/profile_screen.dart';
+import 'package:mediswift/screens/wallet_screen.dart';
 import 'database/Model.dart';
 Model current;
 String google_api_ky="AIzaSyCsFvmoBsPBhQG1rzlL1aY8rUV6DPgt7Cw";
 double height, width;
 
 void main() => runApp(new MaterialApp(
+  theme: ThemeData(
+    backgroundColor: Colors.white,
+    accentColor: Colors.blueAccent,
+    iconTheme: IconThemeData(
+      color: Colors.black
+    )
+  ),
   routes: {
         '/':(cons)=>LogPage(),
     MyHome.HomeRoute: (cont) => MyHome(),
-    Register.RegisterRoute:(con)=>Register()
+    Register.RegisterRoute:(con)=>Register(),
+    ProfileScreen.profileScreenRoute:(con)=>ProfileScreen(),
+    UserEditProfile.editRoute:(con)=>UserEditProfile(),
+    WalletScreen.walletScreenRoute:(cont)=>WalletScreen(),
+    PaymentDetailsScreen.paymentDetialsRoute:(cont)=>PaymentDetailsScreen()
   },
     ));
 

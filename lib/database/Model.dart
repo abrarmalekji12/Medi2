@@ -5,11 +5,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geocoder/services/distant_google.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mediswift/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 
 class Model {
   User permUser;
+  Map<int,PaymentCard> _cardStore={};
+  Map<int,Hospital> hospStore={};
+  Map<int,Review> reviewStore={};
+  Map<int,Doctor> docStore={};
+  Map<int,Appointment> aptStore={};
   Map<dynamic, dynamic> data;
   FirebaseDatabase _database;
   FirebaseStorage _storage;
@@ -21,7 +28,45 @@ class Model {
     _storage = FirebaseStorage.instance;
     _auth = FirebaseAuth.instance;
   }
-
+  Future<Hospital> getHosp(int i) async{
+    if(hospStore.containsKey(i))
+      return hospStore[i];
+    var ab=await _database.reference().child('hospitals').child('$i').once();
+    var shopData=ab.value;
+    shopData['hospId']=i;
+    List<Doctor> docs=[];
+    for(int i=1;i<=shopData['doctors'][0];i++)
+      docs.add(await getDoc(shopData['doctors'][i]));
+    List<Review> list1=[];
+    for(int i=1;i<=shopData['reviews'][0];i++)
+      list1.add(await getReview(shopData['reviews'][i]));
+     return hospStore[i]=Hospital.fromJson(shopData,docs ,list1);
+    }
+  Future<Doctor> getDoc(int i) async{
+    if(docStore.containsKey(i))
+      return docStore[i];
+    var ab=await _database.reference().child('doctors').child('$i').once();
+    var shopData=ab.value;
+    shopData['docId']=i;
+    return docStore[i]=Doctor.fromJson(shopData);
+  }
+  Future<Appointment> getApt(int i) async{
+    if(aptStore.containsKey(i))
+      return aptStore[i];
+    var ab=await _database.reference().child('appointments').child('$i').once();
+    var shopData=ab.value;
+    shopData['aptId']=i;
+    return aptStore[i]=Appointment.fromJson(shopData);
+  }
+  Future<Review> getReview(int i) async {
+    if(reviewStore.containsKey(i))
+      return reviewStore[i];
+    var reviewsData=(await _database.reference().child("reviews").child("$i").once()).value;
+    reviewsData['reviewId']=i;
+    Review review=Review.fromJson(reviewsData);
+    reviewStore[i]=review;
+    return review;
+  }
   Future<User> loadUser() async {
     print("Called load user\n");
     var did = await _database.reference().child('auth_user').child(
@@ -40,7 +85,72 @@ class Model {
     permUser.locationIndex=permUser.totalLocations.length-1;
     return permUser;
   }
+  void saveCard(PaymentCard card) async{
+    if(card.cardId==null)
+      card.cardId=await getNextCardIndex();
+    await _database.reference().child('cards').child('${card.cardId}').set(card.toJson());
+    await  _database.reference().child('cards').child('0').set(card.cardId);
+    if(!_cardStore.containsKey(card.cardId))
+    {
+      _cardStore[card.cardId]=card;
+      _database.reference().child("users").child("${permUser.id}").child('cards').child("0").set(permUser.cards.length);
+      _database.reference().child("users").child("${permUser.id}").child('cards').child("${permUser.cards.length}").set(card.cardId);
+    }
+  }
 
+  Future<List<Transaction>> getAllTransaction() async {
+    List<Transaction> list = [];
+    var temp= (await _database.reference().child("transactions").orderByChild("userId").equalTo(permUser.id).once()).value;
+    if(temp!=null)
+      for(var next in temp)
+      {
+        if(next!=null){
+          Transaction tm=Transaction.fromJson(next,await getCard(next['card']));
+          list.add(tm);
+        }
+      }
+    return list;
+  }
+  Future<int> getNextCardIndex() async{
+    return (await _database.reference().child("cards").child("0").once()).value+1;
+  }
+  Future<List<PaymentCard>>  getAllCards() async{
+    var len= (await   _database.reference().child("users").child("${permUser.id}").child('cards').once()).value;
+    List<PaymentCard> ans=[];
+    for(int i=1;i<=len[0];i++)
+      ans.add(await getCard(len[i]));
+    permUser.cards=ans;
+    return ans;
+  }
+  logOut() {
+    _auth.signOut();
+    _user=null;
+    permUser=null;
+    SharedPreferences.getInstance().then((preff){
+      preff.remove("email");
+      preff.remove("password");
+    });
+    print("sign out");
+  }
+  Future<PaymentCard> getCard(int id) async
+  {
+    if(_cardStore.containsKey(id))
+      return _cardStore[id];
+    var ab=(await _database.reference().child('cards').child('$id').once()).value;
+    ab['cardId']=id;
+    return _cardStore[id]=PaymentCard.fromJson(ab);
+  }
+  void saveUserProfileDetails({String name,String phone}) {
+    current.permUser.name = name;
+    current.permUser.phone=phone;
+    print("userr ${permUser.id}");
+    _database.reference().child("users").child("${permUser.id}").update(
+        {"name": name, "phone": phone}).then((val) {
+      print("name saved");
+    }).catchError((err) {
+      print("error saving name");
+    });
+  }
   Future<bool> logIn(String email, String pass) async {
     print("login called");
     var re = await _auth
@@ -154,8 +264,9 @@ int locationIndex;
 //list of  approved
   User.fromJson(json,int i){
     id=i;
-    phone=json['mob'];
+    phone=json['phone'];
     name=json['name'];
+    email=json['email'];
     locationIndex=json['locationIndex'];
     cards=[];
     totalLocations=[];
@@ -170,6 +281,7 @@ int locationIndex;
     return {
       'phone': phone,
       'name':name,
+      'email':email,
       'locationIndex': locationIndex,
       'totalLocations': tl,
       'cards':[cards.length]+cards.map((val)=>val.cardId).toList(),
@@ -179,19 +291,78 @@ int locationIndex;
 }
 }
 class Doctor{
-
+  int docId;
+  int hospId;
+//  Location location;
+String email;
+String imageUrl;
+//String personalPhone;
+String workPhone;
+String name;
+double fees;
+int treatedCount;
+int practiceYears;
+List<String> eduTags;
+//TODO age don't forget
+String gender;
+String specs;
+Doctor.fromJson(json){
+  docId=json['docId'];
+  hospId=json['hospId'];
+  imageUrl=json['imageUrl'];
+  email=json['email'];
+  practiceYears=json['practiceYears'];
+  treatedCount=0;
+  gender=json['gender'];
+  specs=json['specs'];
+  eduTags=json['eduTags'].toList();
+  workPhone=json['workPhone'];
+  name=json['name'];
+  fees=json['fees'];
+}
 }
 class Hospital{
-
+int hospId;
+String email;
+String name;
+String imageUrl;
+List<Doctor> doctors;
+String phone;
+List<Review> reviews;
+int totalAppointment;
+Hospital.fromJson(json,List<Doctor> docs,List<Review> list){
+  hospId=json['hospId'];
+  email=json['email'];
+  name=json['name'];
+  imageUrl=json['imageUrl'];
+  phone=json['phone'];
+  reviews=list;
+  totalAppointment=json['appointments'][0];
+  doctors=docs;
+}
 }
 class Appointment{
-
+int aptId;
+int hospId;
+int docId;
+int userId;
+String placingTime;
+int status;//  1 placed| 2  accepted | 3 finished
+String acceptedTime;
+Appointment.fromJson(json){
+  aptId=json['aptId'];
+  hospId=json['hospId'];
+  docId=json['docId'];
+  userId=json['userId'];
+  placingTime=json['placingTime'];
+  status=json['status'];
+  acceptedTime=json['acceptedTime'];
+}
 }
 class Review {
   int reviewId;
   int userId;
   int hospId;
-  int docId;
   int aptId;
   int rating;
   String review;
@@ -199,7 +370,6 @@ class Review {
     reviewId=json['reviewId'];
     userId=json['userId'];
     hospId=json['hospId'];
-    docId=json['docId'];
     aptId=json['aptId'];
     rating=json['rating'];
     review=json['review'];
@@ -207,7 +377,6 @@ class Review {
   toJson()=>{
     'userId':userId,
     'hospId':hospId,
-    'docId':docId,
     'rating':rating,
     'aptId':aptId,
     'review':review
@@ -281,7 +450,7 @@ class Transaction{
   int status;//0 , 1 ,2
   Transaction({@required this.userId,@required this.aptId,@required this.status,@required this.money,@required this.card,@required this.time});
   Transaction.fromJson(var data,PaymentCard tempcard) {
-    aptId=data['connectId'];
+    aptId=data['aptId'];
     userId=data['userId'];
     money=double.parse(data['money'].toString());
     card=tempcard;
