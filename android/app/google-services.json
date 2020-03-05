@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "78330378468",
+    "firebase_url": "https://timecontroller-64cf0.firebaseio.com",
+    "project_id": "timecontroller-64cf0",
+    "storage_bucket": "timecontroller-64cf0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:78330378468:android:578637cccf0d64f1c194f1",
+        "android_client_info": {
+          "package_name": "com.developbyabrar.app_t_2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "78330378468-60rdekuej0cmca268poeb9tadqitg6t4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsFvmoBsPBhQG1rzlL1aY8rUV6DPgt7Cw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "78330378468-60rdekuej0cmca268poeb9tadqitg6t4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:78330378468:android:13c3c6a65bcbec53",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "78330378468-60rdekuej0cmca268poeb9tadqitg6t4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsFvmoBsPBhQG1rzlL1aY8rUV6DPgt7Cw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "78330378468-60rdekuej0cmca268poeb9tadqitg6t4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:78330378468:android:33da9419edbf49a3c194f1",
+        "android_client_info": {
+          "package_name": "com.undecided.mediswift"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "78330378468-60rdekuej0cmca268poeb9tadqitg6t4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsFvmoBsPBhQG1rzlL1aY8rUV6DPgt7Cw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "78330378468-60rdekuej0cmca268poeb9tadqitg6t4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

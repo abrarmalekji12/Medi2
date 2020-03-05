@@ -143,27 +143,31 @@ class _MyHomeState extends State<MyHome> {
                 },
                 backgroundColor: Colors.white);
           },
-          child: Row(
-            children: <Widget>[
-              Icon(
-                Icons.location_on,
-                color: Colors.blueAccent,
-                size: 30,
-              ),
-              SizedBox(width:5),
-              Expanded(
-                child: Text(
-                  (current.isLogged())
-                      ? "${current.permUser.totalLocations[current.permUser.locationIndex].address}"
-                      : "location",
-                  style: TextStyle(
-//                    fontFamily: 'JosefinSans',
-                    fontSize: 18,
-                    color: Colors.black
-                  ),overflow: TextOverflow.fade,
+          child: Container(
+            width: dw(65),
+            alignment: Alignment.center,
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  Icons.location_on,
+                  color: Colors.blueAccent,
+                  size: 30,
                 ),
-              ),
-            ],
+                SizedBox(width:5),
+                Expanded(
+                  child: Text(
+                    (current.isLogged())
+                        ? "${current.permUser.totalLocations[current.permUser.locationIndex].address}"
+                        : "location",
+                    style: TextStyle(
+//                    fontFamily: 'JosefinSans',
+                      fontSize: 18,
+                      color: Colors.black
+                    ),overflow: TextOverflow.fade,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         //   backgroundColor: Colors.lightGreen
